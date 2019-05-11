@@ -3,6 +3,7 @@ from collections import Counter, defaultdict
 import os
 from random import shuffle
 import tensorflow as tf
+import numpy as np
 
 
 class NotTrainedError(Exception):
@@ -29,6 +30,7 @@ class GloVeModel():
         self.learning_rate = learning_rate
         self.__words = None
         self.__word_to_id = None
+        self.__word_to_vector = dict()
         self.__cooccurrence_matrix = None
         self.__embeddings = None
 
@@ -149,6 +151,9 @@ class GloVeModel():
             self.__embeddings = self.__combined_embeddings.eval()
             if should_write_summaries:
                 summary_writer.close()
+        for word in self.__word_to_id:
+            self.__word_to_vector[word] = self.__embeddings[self.__word_to_id[word]]
+        np.save('word2vec.npy', self.__word_to_vector)
 
     def embedding_for(self, word_str_or_id):
         if isinstance(word_str_or_id, str):
