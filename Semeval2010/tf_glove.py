@@ -153,7 +153,7 @@ class GloVeModel():
                 summary_writer.close()
         for word in self.__word_to_id:
             self.__word_to_vector[word] = self.__embeddings[self.__word_to_id[word]]
-        np.save('word2vec.npy', self.__word_to_vector)
+        np.save('word2vec.npy', self.__word_to_vector, allow_pickle=True)
 
     def embedding_for(self, word_str_or_id):
         if isinstance(word_str_or_id, str):
