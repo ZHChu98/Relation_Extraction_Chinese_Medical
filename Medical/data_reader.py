@@ -3,7 +3,6 @@ import os
 import math
 import string
 import random
-from string import digits
 
 
 #   0-->无定义关系
@@ -23,7 +22,7 @@ from string import digits
 #  14--><e2>指代为<e1>
 
     
-def read_data_sets(data_dir, padding=0, shuffle=True):
+def read_data_sets(data_dir, padding=0, shuffle=True, noZero=False):
     if os.path.exists('word2vec.npy') == False:
         print("please train word vectors first")
         return
@@ -33,15 +32,22 @@ def read_data_sets(data_dir, padding=0, shuffle=True):
         labels = []
         for i in range(len(data_list)):
             fp = open(os.path.join('data', data_list[i]), 'r', encoding='utf-8')
-            line = fp.readline()
-            while line:
-                line = line.split(' ')
-                line.remove('\n')
-                sentences.append(line)
-                for _ in range(3):
-                    line = fp.readline();
-                labels.append(int(line[0]))
-                line = fp.readline()
+            sentence = fp.readline()
+            while sentence:
+                sentence = sentence.split(' ')
+                sentence.remove('\n')
+                for _ in range(2):
+                    fp.readline();
+                label = fp.readline()
+                label = label.rstrip('\n')
+                if noZero==True and label=='0':
+                    sentence = fp.readline()
+                    continue
+                else:
+                    label = int(label) - noZero
+                sentences.append(sentence)
+                labels.append(label)
+                sentence = fp.readline()
             fp.close
         corpus_size = len(labels)
         if shuffle==True:
@@ -51,13 +57,15 @@ def read_data_sets(data_dir, padding=0, shuffle=True):
             random.seed(rand_seed)
             random.shuffle(labels)
         
+        labels = np.array(labels)
         train_size = corpus_size // 10 * 9
-        semdata = SemData(sentences, labels, train_size, padding)
+        semdata = SemData(sentences, labels, train_size, padding, noZero)
+        distribution(labels, train_size, noZero)
     return semdata
 
     
 class Data(object):
-    def __init__(self, sentences, labels, padding):
+    def __init__(self, sentences, labels, padding, noZero):
         n_embedding = 300
         self.pos = 0
         self.sentences = []
@@ -74,7 +82,10 @@ class Data(object):
             self.sentences.append(np.array(sentence))
             
         self.sentences = np.array(self.sentences)
-        self.labels = np.zeros([len(labels), 15], dtype=int)
+        if noZero==True:
+            self.labels = np.zeros([len(labels), 14], dtype=int)
+        else:
+            self.labels = np.zeros([len(labels), 15], dtype=int)
         for i in range(len(labels)):
             self.labels[i, labels[i]] = 1
         
@@ -87,8 +98,28 @@ class Data(object):
     
     
 class SemData(object):
-    def __init__(self, sentences, labels, train_size, padding):
-        self.train = Data(sentences[0:train_size], labels[0:train_size], padding)
-        self.test = Data(sentences[train_size:], labels[train_size:], padding)
+    def __init__(self, sentences, labels, train_size, padding, noZero):
+        n_class = 15
+        self.train = Data(sentences[0:train_size], labels[0:train_size], padding, noZero)
+        self.test = Data(sentences[train_size:], labels[train_size:], padding, noZero)
+        self.weight = np.array([len(labels)/sum(labels==i) for i in range(n_class-noZero)])
     
 
+def distribution(labels, train_size, noZero):
+    fp = open('distribution.txt', 'w')
+    n_class = 15
+    
+    dist = [sum(labels==i) for i in range(n_class-noZero)]
+    fp.write('all data\n')
+    for i in range(n_class-noZero):
+        fp.write('%2d: %5d  %2.2f %%\n' % (i+noZero, dist[i], 100*dist[i]/len(labels)))
+    dist = [sum(labels[0:train_size]==i) for i in range(n_class-noZero)]
+    fp.write('\ntrain data\n')
+    for i in range(n_class-noZero):
+        fp.write('%2d: %5d  %2.2f %%\n' % (i+noZero, dist[i], 100*dist[i]/train_size))
+    dist = [sum(labels[train_size:]==i) for i in range(n_class-noZero)]
+    fp.write('\ntest data\n')
+    for i in range(n_class-noZero):
+        fp.write('%2d: %5d  %2.2f %%\n' % (i+noZero, dist[i], 100*dist[i]/(len(labels)-train_size)))
+        
+    fp.close()
