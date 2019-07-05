@@ -148,12 +148,14 @@ class GloVeModel():
                     current_embeddings = self.__combined_embeddings.eval()
                     output_path = os.path.join(log_dir, "epoch{:03d}.png".format(epoch + 1))
                     self.generate_tsne(output_path, embeddings=current_embeddings)
+                if epoch % 10 == 0:
+                    print('epoch %d' % (epoch))
             self.__embeddings = self.__combined_embeddings.eval()
             if should_write_summaries:
                 summary_writer.close()
         for word in self.__word_to_id:
             self.__word_to_vector[word] = self.__embeddings[self.__word_to_id[word]]
-        np.save('word2vec.npy', self.__word_to_vector, allow_pickle=True)
+        np.save('pos2vec500.npy', self.__word_to_vector, allow_pickle=True)
 
     def embedding_for(self, word_str_or_id):
         if isinstance(word_str_or_id, str):
