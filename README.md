@@ -7,8 +7,7 @@ In recent years, people are looking forward to a revolution in the medicine area
 ## **Project Structure**
 
 1. Preprocess the data such as parsing, pos-tagging, using *HanLP*
-2. Implement several neural networks such as CNN, biLSTM on MNIST to test their performace.
-Implement and compare various neural networks such as CNN, BiLSTM to extract relationship between entities given in the corpus.
-3. Re-train the model on Medical corpus and optimize through adding position indicator, adjusting parameters.
+2. Implement supervised deep netork such as CNN, biLSTM using *PyTorch* on MNIST to test their performace
+3. Re-train the models on Medical corpus to extract relationship between entities given in corpus and optimize through adding position indicator, tuning the models
 
 For more information, please view the [report](Report.pdf).
