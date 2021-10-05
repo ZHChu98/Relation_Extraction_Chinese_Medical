@@ -11,4 +11,4 @@ In recent years, people are looking forward to a revolution in the medicine area
 Implement and compare various neural networks such as CNN, BiLSTM to extract relationship between entities given in the corpus.
 3. Re-train the model on Medical corpus and optimize through adding position indicator, adjusting parameters.
 
-For more information, please view the [reports](Report.pdf).
+For more information, please view the [report](Report.pdf).
